@@ -47,7 +47,9 @@ obj-$(CONFIG_INPUT_MC13783_PWRBUTTON)	+= mc13783-pwrbutton.o
 obj-$(CONFIG_INPUT_MMA8450)		+= mma8450.o
 obj-$(CONFIG_INPUT_MPU3050)		+= mpu3050.o
 obj-$(CONFIG_SENSORS_MPU6050)		+= mpu6050.o
-obj-$(CONFIG_SENSORS_AKM8963)		+= akm8963.o
+# obj-$(CONFIG_SENSORS_AKM8963)		+= akm8963.o
+# Frank Cheng 20180806 add gcm306
+obj-$(CONFIG_SENSORS_GMC306)		+= gmc306.o
 obj-$(CONFIG_INPUT_PALMAS_PWRBUTTON)	+= palmas-pwrbutton.o
 obj-$(CONFIG_INPUT_PCAP)		+= pcap_keys.o
 obj-$(CONFIG_INPUT_PCF50633_PMU)	+= pcf50633-input.o
@@ -78,7 +80,10 @@ obj-$(CONFIG_SENSORS_AP3426)		+= ap3426.o
 obj-$(CONFIG_SENSORS_BMA2X2)	+= bstclass.o
 
 obj-$(CONFIG_SENSORS_BMA2X2)	+= bma2x2.o
-obj-$(CONFIG_SENSORS_LTR553)	+= ltr553.o
+#//<2018/09/11,Yuchen -[4101] P/L Sensor porting
+#obj-$(CONFIG_SENSORS_LTR553)	+= ltr553.o
+obj-$(CONFIG_SENSORS_STK3X1X) += stk3x1x.o
+#//>2018/09/11,Yuchen
 
 ifeq ($(CONFIG_SENSORS_BMA2X2_ENABLE_INT1),y)
 	EXTRA_CFLAGS += -DBMA2X2_ENABLE_INT1

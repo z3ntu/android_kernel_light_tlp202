@@ -241,6 +241,9 @@
 			regulator-max-microvolt = <1800000>;
 			qcom,init-voltage = <1800000>;
 			status = "okay";
+			/* Set always-on for temporary solution for RF variant check - Gilbert Begin   */
+			regulator-always-on;
+			/* Set always-on for temporary solution for RF variant check - Gilbert End   */
 		};
 	};
 

@@ -89,6 +89,11 @@
 #include <asm/smp.h>
 #endif
 
+//<2018/09/13-RexLu, Add system properties for PCBA stages.
+#include <linux/kernel.h>
+uint32_t hardware_version = 0;
+//>2018/09/13-RexLu
+
 static int kernel_init(void *);
 
 extern void init_IRQ(void);
@@ -500,6 +505,27 @@ static void __init mm_init(void)
 	vmalloc_init();
 }
 
+//<2018/09/13-RexLu, Add system properties for PCBA stages.
+uint32_t __init get_arima_model(void)
+{
+        char * find = NULL;
+        char find_string[5] = {0};
+        int return_value = 0;
+        int rc = 0;
+
+	//pr_notice("saved_command_line : %s\n", saved_command_line);
+        find = strstr(saved_command_line, "androidboot.hardware.version=");
+	//pr_notice("result of strstr : %p\n", find);
+        find += strlen("androidboot.hardware.version=");
+	//pr_notice("result of strstr : %p\n", find);
+        strncpy(find_string, find, 4);
+	//pr_notice("find_string of  : %s\n", find_string);
+        rc = kstrtoint(find_string, 10, &return_value);
+
+        return (uint32_t)return_value;
+}
+//>2018/09/13-RexLu
+
 asmlinkage __visible void __init start_kernel(void)
 {
 	char *command_line;
@@ -533,6 +559,12 @@ asmlinkage __visible void __init start_kernel(void)
 	boot_init_stack_canary();
 	mm_init_cpumask(&init_mm);
 	setup_command_line(command_line);
+
+	//<2018/09/13-RexLu, Add system properties for PCBA stages.
+	hardware_version = get_arima_model();
+	pr_notice("arima_hardware_version: %u\n", hardware_version);
+	//>2018/09/13-RexLu
+
 	setup_nr_cpu_ids();
 	setup_per_cpu_areas();
 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */

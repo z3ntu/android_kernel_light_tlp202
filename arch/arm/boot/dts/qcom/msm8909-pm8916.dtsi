@@ -253,6 +253,7 @@
 		qcom,scale-function = <0>;
 		qcom,hw-settle-time = <0>;
 		qcom,fast-avg-setup = <0>;
+		debounce-interval = <15>;
 	};
 
 	chan@b {

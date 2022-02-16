@@ -115,11 +115,17 @@
 #define IRQ3_SOC_MAX_BIT		BIT(2)
 #define IRQ3_SOC_EMPTY_BIT		BIT(1)
 #define IRQ3_SOC_FULL_BIT		BIT(0)
+//<--[Lightphone][Charging][JasonHsing] Setting pre-charge current 150mA and pre- to fast-charge voltage 3.4V 20181207 BEGIN --
+#define OTG_CFG_REG			0x12
+#define PRE_FAST_VOL_MASK		SMB1360_MASK(7, 5)
+#define PRE_FAST_VOL_SHIFT		5
 
 #define CHG_CURRENT_REG			0x13
 #define FASTCHG_CURR_MASK		SMB1360_MASK(4, 2)
 #define FASTCHG_CURR_SHIFT		2
-
+#define PRE_CURR_MASK		SMB1360_MASK(1, 0)
+#define PRE_CURR_SHIFT		0
+//-->[Lightphone][Charging][JasonHsing] Setting pre-charge current 150mA and pre- to fast-charge voltage 3.4V 20181207 END --
 #define CHG_CMP_CFG			0x14
 #define JEITA_COMP_CURR_MASK		SMB1360_MASK(3, 0)
 #define JEITA_COMP_EN_MASK		SMB1360_MASK(7, 4)
@@ -370,6 +376,9 @@ struct smb1360_chip {
 	int				warm_bat_ma;
 	int				soft_cold_thresh;
 	int				soft_hot_thresh;
+//<--[Lightphone][Charging][JasonHsing] Battery profile for Fuel Gauge 20181212 BEGIN
+	bool				otp_rslow_config;
+//-->[Lightphone][Charging][JasonHsing] Battery profile for Fuel Gauge 20181212 END
 
 	/* parallel-chg params */
 	int				fastchg_current;
@@ -467,11 +476,17 @@ static int input_current_limit[] = {
 	300, 400, 450, 500, 600, 700, 800, 850, 900,
 	950, 1000, 1100, 1200, 1300, 1400, 1500,
 };
+//<--[Lightphone][Charging][JasonHsing] Add battery parameter for battery spec for charging 20181004 BEGIN
+static int comp_current[] = {
+ 450, 600, 750, 900, 1050, 1200, 1350, 1500,100,150, 200, 550,
+};
+//<-[Lightphone][Charging][JasonHsing] Change AC charging current to 600mA 20181109 BEGIN --
 
 static int fastchg_current[] = {
-	450, 600, 750, 900, 1050, 1200, 1350, 1500,
+	450, 600,
 };
-
+//->[Lightphone][Charging][JasonHsing] Change AC charging current to 600mA 20181109 END --
+//-->[Lightphone][Charging][JasonHsing] Add battery parameter for battery spec for charging 20181004 END
 static void smb1360_stay_awake(struct smb1360_wakeup_source *source,
 	enum wakeup_src wk_src)
 {
@@ -1661,11 +1676,24 @@ static int smb1360_set_jeita_comp_curr(struct smb1360_chip *chip,
 {
 	int i;
 	int rc = 0;
-
-	for (i = ARRAY_SIZE(fastchg_current) - 1; i >= 0; i--) {
-		if (fastchg_current[i] <= current_ma)
-			break;
+//<--[Lightphone][Charging][JasonHsing] Add battery parameter for battery spec for charging 20181004 BEGIN
+	if (current_ma >= 450 ) {
+		for (i = ARRAY_SIZE(fastchg_current) - 1; i >= 0; i--) {
+			if (fastchg_current[i] <= current_ma)
+			{
+				if(current_ma>=550 && current_ma<600)
+					i=11;
+				break; 
+			}
+		}
 	}
+	else if (current_ma >= 100 && current_ma < 450) {
+		for (i = ARRAY_SIZE(comp_current) - 2; i >= ARRAY_SIZE(fastchg_current); i--) {
+				if (comp_current[i] <= current_ma)
+					break;
+		}
+	}
+//-->[Lightphone][Charging][JasonHsing] Add battery parameter for battery spec for charging 20181004 END
 	if (i < 0) {
 		pr_debug("Couldn't find fastchg_current %dmA\n", current_ma);
 		i = 0;
@@ -3582,6 +3610,47 @@ static int determine_initial_status(struct smb1360_chip *chip)
 	return 0;
 }
 
+//<--[Lightphone][Charging][JasonHsing] Battery profile for Fuel Gauge 20181212 BEGIN
+static int smb1360_otp_set_rslow(struct smb1360_chip *chip)
+{
+	int rc;
+	u8 address, data, i, prof;
+
+	u8 reg_val_mapping[][2] = {
+		{0xE0, 0x54},
+		{0xE1, 0x8B},
+		{0xE2, 0x55},
+		{0xE3, 0x71},
+		{0xE4, 0x56},
+		{0xE5, 0xB4},
+		{0xE6, 0x57},
+		{0xE7, 0x70},
+		{0xF0, 0xAA},	//For battery profile A
+		{0xF1, 0x00},	//For battery profile A
+	};
+
+	rc = smb1360_read(chip, SHDW_FG_BATT_STATUS, &prof);
+	if (!!(prof & BATTERY_PROFILE_BIT))
+		reg_val_mapping[8][1]= 0xFF;	// for profile B
+
+	for (i = 0; i < ARRAY_SIZE(reg_val_mapping); i++) {
+		address = reg_val_mapping[i][0];
+		data = reg_val_mapping[i][1];
+
+		pr_debug("Writing reg_add=%x value=%x\n", address, data);
+
+		rc = smb1360_fg_write(chip, address, data);
+		if (rc) {
+			pr_err("Write fg address 0x%x failed, rc = %d\n",
+					address, rc);
+			return rc;
+		}
+	}
+
+	return 0;
+}
+//-->[Lightphone][Charging][JasonHsing] Battery profile for Fuel Gauge 20181212 END
+
 static int smb1360_fg_config(struct smb1360_chip *chip)
 {
 	int rc = 0, temp, fcc_mah;
@@ -3708,6 +3777,7 @@ disable_fg_reset:
 		}
 	}
 
+//<--[Lightphone][Charging][JasonHsing] Battery profile for Fuel Gauge 20181212 BEGIN
 	/* scratch-pad register config */
 	if (chip->batt_capacity_mah != -EINVAL
 		|| chip->v_cutoff_mv != -EINVAL
@@ -3715,7 +3785,9 @@ disable_fg_reset:
 		|| chip->fg_ibatt_standby_ma != -EINVAL
 		|| chip->fg_thermistor_c1_coeff != -EINVAL
 		|| chip->fg_cc_to_cv_mv != -EINVAL
+		|| chip->otp_rslow_config
 		|| chip->fg_auto_recharge_soc != -EINVAL) {
+//-->[Lightphone][Charging][JasonHsing] Battery profile for Fuel Gauge 20181212 END
 
 		rc = smb1360_enable_fg_access(chip);
 		if (rc) {
@@ -3868,6 +3940,33 @@ disable_fg_reset:
 				goto disable_fg;
 			}
 		}
+
+//<--[Lightphone][Charging][JasonHsing] Battery profile for Fuel Gauge 20181212 BEGIN
+		if (chip->otp_rslow_config) {
+			pr_err("WA- otp_rslow_config, START");
+			chip->fg_access_type = FG_ACCESS_CFG;
+
+			rc = smb1360_select_fg_i2c_address(chip);
+			if (rc) {
+				pr_err("Unable to set FG access I2C address\n");
+				goto disable_fg;
+			}
+
+			rc = smb1360_otp_set_rslow(chip);
+			if (rc) {
+				pr_err("Unable to modify current gain rc=%d\n", rc);
+				goto disable_fg;
+			}
+
+			rc = smb1360_masked_write(chip, CFG_FG_BATT_CTRL_REG,
+				CFG_FG_OTP_BACK_UP_ENABLE, CFG_FG_OTP_BACK_UP_ENABLE);
+			if (rc) {
+				pr_err("Write reg 0x0E failed, rc = %d\n", rc);
+				goto disable_fg;
+			}
+			pr_err("WA- otp_rslow_config, END");
+		}
+//-->[Lightphone][Charging][JasonHsing] Battery profile for Fuel Gauge 20181212 END
 
 disable_fg:
 		/* disable FG access */
@@ -4076,6 +4175,22 @@ static int smb1360_hw_init(struct smb1360_chip *chip)
 		dev_err(chip->dev, "Couldn't set CFG_CHG_MISC_REG rc=%d\n", rc);
 		return rc;
 	}
+
+//<--[Lightphone][Charging][JasonHsing] Setting pre-charge current 150mA and pre- to fast-charge voltage 3.4V 20181207 BEGIN --
+	rc = smb1360_masked_write(chip, OTG_CFG_REG,
+					PRE_FAST_VOL_MASK, 7 << PRE_FAST_VOL_SHIFT);
+	if (rc < 0) {
+		dev_err(chip->dev, "Couldn't set OTG_CFG_REG rc=%d\n", rc);
+		return rc;
+	}
+
+	rc = smb1360_masked_write(chip, CHG_CURRENT_REG,
+					PRE_CURR_MASK, 1 << PRE_CURR_SHIFT);
+	if (rc < 0) {
+		dev_err(chip->dev, "Couldn't set CHG_CURRENT_REG rc=%d\n", rc);
+		return rc;
+	}
+//-->[Lightphone][Charging][JasonHsing] Setting pre-charge current 150mA and pre- to fast-charge voltage 3.4V 20181207 END --
 
 	/* USB/AC pin settings */
 	rc = smb1360_masked_write(chip, CFG_BATT_CHG_ICL_REG,
@@ -4878,6 +4993,11 @@ static int smb_parse_dt(struct smb1360_chip *chip)
 			chip->fg_reset_threshold_mv = FG_RESET_THRESHOLD_MV;
 		}
 	}
+
+//<--[Lightphone][Charging][JasonHsing] Battery profile for Fuel Gauge 20181212 BEGIN
+	chip->otp_rslow_config = of_property_read_bool(node,
+						"qcom,otp-rslow-cfg");
+//-->[Lightphone][Charging][JasonHsing] Battery profile for Fuel Gauge 20181212 END
 
 	return 0;
 }

@@ -23,7 +23,9 @@
 	qcom,board-id= <8 0x4>;
 };
 
-&i2c_4 {
+/*[Lightphone][Charging][JasonHsing] SMB1360 external charger driver porting_3 20180816 BEGIN*/
+//[Lightphone][Charging][JasonHsing] Add battery parameter for battery spec for charging 20181004 BEGIN
+&i2c_1 {
 	smb1360_otg_supply: smb1360-chg-fg@14 {
 		compatible = "qcom,smb1360-chg-fg";
 		reg = <0x14>;
@@ -31,17 +33,40 @@
 		interrupts = <58 8>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&smb_int_default>;
-		qcom,charging-disabled;
+		//qcom,charging-disabled;
 		qcom,empty-soc-disabled;
 		qcom,chg-inhibit-disabled;
-		qcom,float-voltage-mv = <4200>;
-		qcom,iterm-ma = <200>;
-		qcom,recharge-thresh-mv = <100>;
-		qcom,thermal-mitigation = <1500 700 600 0>;
+		qcom,float-voltage-mv = <4350>;
+		qcom,iterm-ma = <50>;
+		qcom,fg-cutoff-voltage-mv = <3400>;
+//<-[Lightphone][Charging][JasonHsing] Stop charging when battery temp out of range 0 ~ 50 degC 20181203 BEGIN -
+		qcom,otp-hard-jeita-config;
+		qcom,otp-hot-bat-decidegc = <500>;
+		qcom,otp-cold-bat-decidegc = <0>;
+//->[Lightphone][Charging][JasonHsing] Stop charging when battery temp out of range 0 ~ 50 degC 20181203 END -
+		qcom,soft-jeita-supported;
+		qcom,warm-bat-decidegc = <450>;
+		qcom,warm-bat-mv = <4100>;
+		qcom,warm-bat-ma = <450>;
+
+		qcom,cool-bat-decidegc = <150>;
+		qcom,cool-bat-mv = <4100>;
+		qcom,cool-bat-ma = <150>;
+//<-[Lightphone][Charging][JasonHsing] Re-charge condition for battery to 99% capacity 20181129 BEGIN -
+		qcom,fg-auto-recharge-soc = <99>;
+		qcom,thermal-mitigation = <600 450 150 0>;
+//->[Lightphone][Charging][JasonHsing] Re-charge condition for battery to 99% capacity 20181129 END -
+//<--[Lightphone][Charging][JasonHsing] Battery profile for Fuel Gauge 20181212 BEGIN
+		qcom,otp-rslow-cfg;
+		qcom,thermistor-c1-coeff = <0x86DA>;
+		qcom,fg-batt-capacity-mah = <985>;
+		qcom,fg-cc-soc-coeff = <0x9028>;
+//-->[Lightphone][Charging][JasonHsing] Battery profile for Fuel Gauge 20181212 END
 		regulator-name = "smb1360_otg_vreg";
 	};
 };
-
+//[Lightphone][Charging][JasonHsing] Add battery parameter for battery spec for charging 20181004 END
+/*[Lightphone][Charging][JasonHsing] SMB1360 external charger driver porting_3 20180816 END*/
 &pm8916_chg {
 	status = "ok";
 	qcom,use-external-charger;

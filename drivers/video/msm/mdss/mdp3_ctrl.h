@@ -91,7 +91,7 @@ struct mdp3_session_data {
 	int transition_state;
 };
 
-void mdp3_bufq_deinit(struct mdp3_buffer_queue *bufq);
+void mdp3_bufq_deinit(struct mdp3_buffer_queue *bufq, int client);
 int mdp3_ctrl_init(struct msm_fb_data_type *mfd);
 int mdp3_bufq_push(struct mdp3_buffer_queue *bufq,
 			struct mdp3_img_data *data);
@@ -99,5 +99,6 @@ int mdp3_ctrl_get_source_format(u32 imgType);
 int mdp3_ctrl_get_pack_pattern(u32 imgType);
 int mdp3_ctrl_reset(struct msm_fb_data_type *mfd);
 int config_secure_display(struct mdp3_session_data *mdp3_session);
+int mdp3_get_ion_client(struct msm_fb_data_type *mfd);
 
 #endif /* MDP3_CTRL_H */

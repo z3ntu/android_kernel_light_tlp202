@@ -2,7 +2,7 @@
  * Core MDSS framebuffer driver.
  *
  * Copyright (C) 2007 Google Incorporated
- * Copyright (c) 2008-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2008-2018, The Linux Foundation. All rights reserved.
  *
  * This software is licensed under the terms of the GNU General Public
  * License version 2, as published by the Free Software Foundation, and
@@ -343,6 +343,9 @@ static ssize_t mdss_fb_get_type(struct device *dev,
 		break;
 	case EDP_PANEL:
 		ret = snprintf(buf, PAGE_SIZE, "edp panel\n");
+		break;
+	case SPI_PANEL:
+		ret = snprintf(buf, PAGE_SIZE, "spi panel\n");
 		break;
 	default:
 		ret = snprintf(buf, PAGE_SIZE, "unknown panel\n");
@@ -923,16 +926,26 @@ static struct attribute_group mdss_fb_attr_group = {
 	.attrs = mdss_fb_attrs,
 };
 
+//[4101][Raymond] EPD dynamic change waveform and partial update -begin
+extern const struct attribute_group epd_attr_group;
+//[4101][Raymond] EPD dynamic change waveform and partial update -end
+//[4101][Raymond] EPD dynamic change waveform and partial update -begin	
 static int mdss_fb_create_sysfs(struct msm_fb_data_type *mfd)
 {
 	int rc;
-
+pr_err("%s ++\n",__func__);
 	rc = sysfs_create_group(&mfd->fbi->dev->kobj, &mdss_fb_attr_group);
 	if (rc)
-		pr_err("sysfs group creation failed, rc=%d\n", rc);
+		pr_err("sysfs mdss_fb_attr_group group creation failed, rc=%d\n", rc);
+
+	rc = sysfs_create_group(&mfd->fbi->dev->kobj, &epd_attr_group);
+	if (rc)
+		pr_err("sysfs epd_attr_group group creation failed, rc=%d\n", rc);
+
+pr_err("%s --\n",__func__);	
 	return rc;
 }
-
+//[4101][Raymond] EPD dynamic change waveform and partial update -end	
 static void mdss_fb_remove_sysfs(struct msm_fb_data_type *mfd)
 {
 	sysfs_remove_group(&mfd->fbi->dev->kobj, &mdss_fb_attr_group);
@@ -1199,6 +1212,7 @@ static int mdss_fb_probe(struct platform_device *pdev)
 	struct mdss_panel_data *pdata;
 	struct fb_info *fbi;
 	int rc;
+	const char *data;
 
 	if (fbi_list_index >= MAX_FBI_LIST)
 		return -ENOMEM;
@@ -1247,6 +1261,21 @@ static int mdss_fb_probe(struct platform_device *pdev)
 
 	mfd->pdev = pdev;
 
+	if (mfd->panel.type == SPI_PANEL)
+		mfd->fb_imgType = MDP_RGB_565;
+	if (mfd->panel.type == MIPI_VIDEO_PANEL || mfd->panel.type ==
+		MIPI_CMD_PANEL || mfd->panel.type == SPI_PANEL){
+		rc = of_property_read_string(pdev->dev.of_node,
+			"qcom,mdss-fb-format", &data);
+		if (!rc) {
+			if (!strcmp(data, "rgb888"))
+				mfd->fb_imgType = MDP_RGB_888;
+			else if (!strcmp(data, "rgb565"))
+				mfd->fb_imgType = MDP_RGB_565;
+			else
+				mfd->fb_imgType = MDP_RGBA_8888;
+		}
+	}
 	mfd->split_fb_left = mfd->split_fb_right = 0;
 
 	mdss_fb_set_split_mode(mfd, pdata);
@@ -1357,6 +1386,7 @@ static void mdss_fb_set_mdp_sync_pt_threshold(struct msm_fb_data_type *mfd,
 		mfd->mdp_sync_pt_data.threshold = 1;
 		mfd->mdp_sync_pt_data.retire_threshold = 0;
 		break;
+	case SPI_PANEL:
 	case MIPI_CMD_PANEL:
 		mfd->mdp_sync_pt_data.threshold = 1;
 		mfd->mdp_sync_pt_data.retire_threshold = 1;
@@ -3317,7 +3347,7 @@ int mdss_fb_atomic_commit(struct fb_info *info,
 {
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)info->par;
 	struct mdp_layer_commit_v1 *commit_v1;
-	struct mdp_output_layer *output_layer;
+	struct mdp_output_layer output_layer;
 	struct mdss_panel_info *pinfo;
 	bool wait_for_finish, wb_change = false;
 	int ret = -EPERM;
@@ -3349,36 +3379,41 @@ int mdss_fb_atomic_commit(struct fb_info *info,
 
 	commit_v1 = &commit->commit_v1;
 	if (commit_v1->flags & MDP_VALIDATE_LAYER) {
-		if (!mfd->skip_koff_wait) {
 			ret = mdss_fb_wait_for_kickoff(mfd);
 			if (ret) {
 				pr_err("wait for kickoff failed\n");
-				goto end;
-			}
-		}
+		} else {
 		__ioctl_transition_dyn_mode_state(mfd,
 			MSMFB_ATOMIC_COMMIT, true, false);
 		if (mfd->panel.type == WRITEBACK_PANEL) {
-			output_layer = commit_v1->output_layer;
-			if (!output_layer) {
+				if (!commit_v1->output_layer) {
 				pr_err("Output layer is null\n");
 				goto end;
 			}
+				ret = copy_from_user(&output_layer,
+				commit_v1->output_layer, sizeof(output_layer));
+				if (ret) {
+					pr_err("output_layer copy from user failed\n");
+					goto end;
+				}
+
+
 			wb_change = !mdss_fb_is_wb_config_same(mfd,
-					commit_v1->output_layer);
+						&output_layer);
 			if (wb_change) {
 				old_xres = pinfo->xres;
 				old_yres = pinfo->yres;
 				old_format = mfd->fb_imgType;
 				mdss_fb_update_resolution(mfd,
-					output_layer->buffer.width,
-					output_layer->buffer.height,
-					output_layer->buffer.format);
+						output_layer.buffer.width,
+						output_layer.buffer.height,
+						output_layer.buffer.format);
 			}
 		}
 		ret = mfd->mdp.atomic_validate(mfd, file, commit_v1);
 		if (!ret)
 			mfd->atomic_commit_pending = true;
+		}
 		goto end;
 	} else {
 		ret = mdss_fb_pan_idle(mfd);

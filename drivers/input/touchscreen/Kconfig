@@ -1149,4 +1149,31 @@ config TOUCHSCREEN_HIMAX_CHIPSET
 
 source "drivers/input/touchscreen/hxchipset/Kconfig"
 
+ config TOUCHSCREEN_FT3267
+	bool "ft3267 for Mediatek package"
+	default n
+	help
+	  Say Y here if you have ft3267 touch panel.
+
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+
+source "drivers/input/touchscreen/ft3267/Kconfig"
+
+
+ config TOUCHSCREEN_FTS
+	bool "ft3417 for Mediatek package"
+	default n
+	help
+	  Say Y here if you have ft3417 touch panel.
+
+	  If unsure, say N.
+
+	  To compile this dirver as a module, choose M here: the
+	  module will be called.
+
+source "drivers/input/touchscreen/ft3417/Kconfig"
+
 endif

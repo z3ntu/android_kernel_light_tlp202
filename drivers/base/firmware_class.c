@@ -297,8 +297,10 @@ static void fw_free_buf(struct firmware_buf *buf)
 
 /* direct firmware loading support */
 static char fw_path_para[256];
+//[4101][Raymond] Change waveform mode begin
 static const char * const fw_path[] = {
 	fw_path_para,
+	"/vendor/firmware/epd",
 	"/lib/firmware/updates/" UTS_RELEASE,
 	"/lib/firmware/updates",
 	"/lib/firmware/" UTS_RELEASE,
@@ -306,7 +308,7 @@ static const char * const fw_path[] = {
 	"/lib64/firmware",
 	"/lib/firmware/image"
 };
-
+//[4101][Raymond] Change waveform mode end
 /*
  * Typical usage is that passing 'firmware_class.path=$CUSTOMIZED_PATH'
  * from kernel command line because firmware_class is generally built in

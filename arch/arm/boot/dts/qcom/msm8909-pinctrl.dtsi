@@ -266,7 +266,11 @@
 		pmx_mdss {
 			mdss_dsi_active: mdss_dsi_active {
 				mux {
-					pins = "gpio25", "gpio37";
+
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+					pins = "gpio50", "gpio37"; //QCT ref LCM RST , backlight en pin
+/*[Arima_4101][allen_yu] 20180906 end*/
+
 					function = "gpio";
 				};
 
@@ -279,7 +283,9 @@
 
 			mdss_dsi_suspend: mdss_dsi_suspend {
 				mux {
-					pins = "gpio25", "gpio37";
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+					pins = "gpio50", "gpio37";
+/*[Arima_4101][allen_yu] 20180906 end*/
 					function = "gpio";
 				};
 
@@ -418,58 +424,58 @@
 				};
 			};
 		};
-
-		spi4 {
-			spi4_default: spi4_default {
-				mux {
-					pins = "gpio12", "gpio13",
-						"gpio15";
-					function = "blsp_spi4";
-				};
-				config {
-					pins = "gpio12", "gpio13",
-						"gpio15";
-					drive-strength = <12>; /* 12 MA */
-					bias-disable; /* No PULL */
-				};
-			};
-			spi4_sleep: spi4_sleep {
-				mux {
-					pins = "gpio12", "gpio13",
-						"gpio15";
-					function = "gpio";
-				};
-				config {
-					pins = "gpio12", "gpio13",
-						"gpio15";
-					drive-strength = <2>; /* 2 MA */
-					bias-pull-down; /* pull down */
-				};
-			};
-			spi4_cs0_active: spi4_cs0_active {
-				mux {
-					pins = "gpio14";
-					function = "blsp_spi4";
-				};
-				config {
-					pins = "gpio14";
-					drive-strength = <2>;
-					bias-pull-up;
-				};
-			};
-			spi4_cs0_sleep: spi4_cs0_sleep {
-				mux {
-					pins = "gpio14";
-					function = "gpio";
-				};
-				config {
-					pins = "gpio14";
-					drive-strength = <2>;
-					bias-pull-up;
-				};
-			};
-		};
-
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+//		spi4 {
+//			spi4_default: spi4_default {
+//				mux {
+//					pins = "gpio12", "gpio13",
+//						"gpio15";
+//					function = "blsp_spi4";
+//				};
+//				config {
+//					pins = "gpio12", "gpio13",
+//						"gpio15";
+//					drive-strength = <12>; /* 12 MA */
+//					bias-disable; /* No PULL */
+//				};
+//			};
+//			spi4_sleep: spi4_sleep {
+//				mux {
+//					pins = "gpio12", "gpio13",
+//						"gpio15";
+//					function = "gpio";
+//				};
+//				config {
+//					pins = "gpio12", "gpio13",
+//						"gpio15";
+//					drive-strength = <2>; /* 2 MA */
+//					bias-pull-down; /* pull down */
+//				};
+//			};
+//			spi4_cs0_active: spi4_cs0_active {
+//				mux {
+//					pins = "gpio14";
+//					function = "blsp_spi4";
+//				};
+//				config {
+//					pins = "gpio14";
+//					drive-strength = <2>;
+//					bias-pull-up;
+//				};
+//			};
+//			spi4_cs0_sleep: spi4_cs0_sleep {
+//				mux {
+//					pins = "gpio14";
+//					function = "gpio";
+//				};
+//				config {
+//					pins = "gpio14";
+//					drive-strength = <2>;
+//					bias-pull-up;
+//				};
+//			};
+//		};
+/*[Arima_4101][allen_yu] 20180906 end*/
 		pmx_i2c_1 {
 			i2c_1_active: i2c_1_active {
 				mux {
@@ -831,12 +837,16 @@
 		pmx_ts_reset_active {
 			ts_reset_active: ts_reset_active {
 				mux {
-					pins = "gpio12";
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+					pins = "gpio25";
+/*[Arima_4101][allen_yu] 20180906 end*/
 					function = "gpio";
 				};
 
 				config {
-					pins = "gpio12";
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+					pins = "gpio25";
+/*[Arima_4101][allen_yu] 20180906 end*/
 					drive-strength = <8>;
 					bias-pull-up;
 				};
@@ -846,12 +856,16 @@
 		pmx_ts_reset_suspend {
 			ts_reset_suspend: ts_reset_suspend {
 				mux {
-					pins = "gpio12";
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+					pins = "gpio25";
+/*[Arima_4101][allen_yu] 20180906 end*/
 					function = "gpio";
 				};
 
 				config {
-					pins = "gpio12";
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+					pins = "gpio25";
+/*[Arima_4101][allen_yu] 20180906 end*/
 					drive-strength = <2>;
 					bias-pull-down;
 				};
@@ -894,12 +908,16 @@
 		pmx_ts_release {
 			ts_release: ts_release {
 				mux {
-					pins = "gpio13", "gpio12";
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+					pins = "gpio13", "gpio25";
+/*[Arima_4101][allen_yu] 20180906 end*/
 					function = "gpio";
 				};
 
 				config {
-					pins = "gpio13", "gpio12";
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+					pins = "gpio13", "gpio25";
+/*[Arima_4101][allen_yu] 20180906 end*/
 					drive-strength = <2>;
 					bias-pull-down;
 				};

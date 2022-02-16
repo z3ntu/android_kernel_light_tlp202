@@ -89,10 +89,12 @@ static int msm8952_wsa_switch_event(struct snd_soc_dapm_widget *w,
  * Need to report LINEIN
  * if R/L channel impedance is larger than 5K ohm
  */
+
+//[Lightphone][Audio][jinjia]=2019.08.20=Remove detect_extn_cable(Lineout) support for an iphone_headset.
 static struct wcd_mbhc_config mbhc_cfg = {
 	.read_fw_bin = false,
 	.calibration = NULL,
-	.detect_extn_cable = true,
+	.detect_extn_cable = false,
 	.mono_stero_detection = false,
 	.swap_gnd_mic = NULL,
 	.hs_ext_micbias = false,
@@ -1631,6 +1633,20 @@ static void *def_msm8952_wcd_mbhc_cal(void)
 	 * 210-290 == Button 2
 	 * 360-680 == Button 3
 	 */
+
+//[Lightphone][Audio][jinjia]=2019.08.20=Adjust the voltage range threshold for headset multi-key detection. -s
+#if 1
+	btn_low[0] = 75;
+	btn_high[0] = 75;
+	btn_low[1] = 125;
+	btn_high[1] = 125;
+	btn_low[2] = 225;
+	btn_high[2] = 225;
+	btn_low[3] = 450;
+	btn_high[3] = 450;
+	btn_low[4] = 500;
+	btn_high[4] = 500;
+#else
 	btn_low[0] = 75;
 	btn_high[0] = 75;
 	btn_low[1] = 150;
@@ -1641,6 +1657,8 @@ static void *def_msm8952_wcd_mbhc_cal(void)
 	btn_high[3] = 450;
 	btn_low[4] = 500;
 	btn_high[4] = 500;
+#endif
+//[Lightphone][Audio][jinjia]=2019.08.20=Adjust the voltage range threshold for headset multi-key detection. -e
 
 	return msm8952_wcd_cal;
 }

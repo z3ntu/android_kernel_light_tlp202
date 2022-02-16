@@ -341,6 +341,13 @@ extern unsigned long mem_cgroup_shrink_node_zone(struct mem_cgroup *mem,
 						unsigned long *nr_scanned);
 extern unsigned long shrink_all_memory(unsigned long nr_pages);
 extern int vm_swappiness;
+//<2018/10/04,Yuchen-[4101] Google Kenel pathes
+#ifdef CONFIG_MEMCG
+extern unsigned long vmpressure_win;
+extern unsigned int vmpressure_level_med;
+extern unsigned int vmpressure_level_critical;
+#endif
+//>2018/10/04,Yuchen
 extern int sysctl_swap_ratio;
 extern int sysctl_swap_ratio_enable;
 extern int remove_mapping(struct address_space *mapping, struct page *page);

@@ -595,8 +595,8 @@ static bool msm_dcvs_check_supported(struct msm_vidc_inst *inst)
 	res = &core->resources;
 
 	if (!res->dcvs_limit) {
-		dprintk(VIDC_WARN,
-				"%s: dcvs limit table not found\n", __func__);
+///		dprintk(VIDC_WARN,
+///				"%s: dcvs limit table not found\n", __func__);
 		return false;
 	}
 	instance_count = msm_dcvs_count_active_instances(core);

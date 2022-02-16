@@ -239,6 +239,18 @@ void snd_jack_report(struct snd_jack *jack, int status)
 	if (!jack)
 		return;
 
+//[Lightphone][Audio][jinjia]=2019.08.16=Force to report 4-pole headset when plug in an iphone_headset. -s
+//This is an insurance measures, it should not be triggered.
+	if (jack->type & 0x3ff) {
+		//if jack_type is any jack_switch_types, not keys.
+		if (status==0x0c){
+			//if jack_type is Lineout or extension cable(SND_JACK_LINEOUT and SND_JACK_MECHANICAL).
+			pr_info("snd_jack_report(): Report status when connect a Lineout or extension cable.\n");
+			status = 0x0b;
+		}
+	}
+//[Lightphone][Audio][jinjia]=2019.08.16=Force to report 4-pole headset when plug in an iphone_headset. -e
+
 	for (i = 0; i < ARRAY_SIZE(jack->key); i++) {
 		int testbit = SND_JACK_BTN_0 >> i;
 

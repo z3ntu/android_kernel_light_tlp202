@@ -182,6 +182,8 @@
 			debounce-interval = <15>;
 		};
 
+		//<2018/08/17-RexLu, Add Phone_Select button key.
+		/*
 		camera_snapshot {
 			label = "camera_snapshot";
 			gpios = <&msm_gpio 92 0x1>;
@@ -189,7 +191,15 @@
 			linux,code = <0x2fe>;
 			gpio-key,wakeup;
 			debounce-interval = <15>;
+		};*/
+		Phone_Select {
+			label = "Phone_Select";
+			gpios = <&msm_gpio 92 0x1>;
+			linux,input-type = <1>;
+			linux,code = <625>;
+			debounce-interval = <15>;
 		};
+		//>2018/08/17-RexLu
 
 		vol_up {
 			label = "volume_up";
@@ -215,8 +225,8 @@
 		qcom,msm-codec-type = "internal";
 		qcom,msm-ext-pa = "primary";
 		qcom,msm-mclk-freq = <9600000>;
-		qcom,msm-mbhc-hphl-swh = <0>;
-		qcom,msm-mbhc-gnd-swh = <0>;
+		qcom,msm-mbhc-hphl-swh = <1>;
+		qcom,msm-mbhc-gnd-swh = <1>;
 		qcom,msm-hs-micbias-type = "internal";
 		qcom,msm-micbias1-ext-cap;
 		qcom,split-a2dp;
@@ -374,7 +384,9 @@
 	status = "ok";
 };
 
-&i2c_1 { /* BLSP1 QUP1 */
+//20180820 Frank Cheng Modified for Light Phone
+//&i2c_1 { /* BLSP1 QUP1 */
+&i2c_3 { /* BLSP1 QUP3 */
 	mpu6050@68 { /* Gyroscope and accelerometer sensor combo */
 		compatible = "invn,mpu6050";
 		reg = <0x68>;
@@ -383,12 +395,20 @@
 		pinctrl-1 = <&mpu6050_sleep>;
 		interrupt-parent = <&msm_gpio>;
 		interrupts = <96 0x1>;
-		vdd-supply = <&pm8909_l17>;
+		///vdd-supply = <&pm8909_l17>;
 		vlogic-supply = <&pm8909_l6>;
-		invn,gpio-int = <&msm_gpio 96 0x1>;
-		invn,place = "Portrait Down Back Side";
+//20180910 Sherman Wei Modified
+		invn,gpio-int = <&msm_gpio 51 0x1>;
+///		invn,use-interrupt;
+///		invn,place = "Portrait Down Back Side";
+//20181123 Frank Cheng Modified, back to Portrait mode due to display orientataion setting complete
+////20181004 Frank Cheng Modified
+////		invn,place = "Portrait Up";
+//		invn,place = "Landscape Left";
+		invn,place = "Portrait Up";
 	};
-
+//<2018/09/11,Yuchen -[4101] P/L Sensor porting
+#if 0
 	avago@39 { /* Ambient light and proximity sensor */
 		compatible = "avago,apds9900";
 		reg = <0x39>;
@@ -409,7 +429,34 @@
 		avago,als-D = <129>;
 		avago,ga-value = <256>;
 	};
+#else
+	//2018/10/22,Yuchen -[4101] P/L Sensor DVT1 calibration.
+	//                   stk,alsctrl-reg = 0x39 -> 0x38
+	//                   stk,transmittance = 500 -> 1100
+	stk@48 {
+		compatible = "stk,stk3x1x";
+		reg = <0x48>;
+		pinctrl-names = "default","sleep";
+		pinctrl-0 = <&stk3x1x_default>;
+		pinctrl-1 = <&stk3x1x_sleep>;
+		interrupt-parent = <&msm_gpio>;
+		interrupts = <52 0x2>;
+		vdd-supply = <&pm8909_l17>;
+		vio-supply = <&pm8909_l6>;
+		stk,irq-gpio = <&msm_gpio 52 0x2>;
+		stk,state-reg = <0x0>;
+		stk,psctrl-reg = <0x31>;
+		stk,alsctrl-reg = <0x38>;
+		stk,ledctrl-reg = <0xFF>;
+		stk,wait-reg = <0x0F>;
+		stk,ps-thdh = <1700>;
+		stk,ps-thdl = <1500>;
+		stk,transmittance = <1100>;
+	};
+#endif
+#//>2018/09/11,Yuchen
 
+#if 0
 	akm@c { /* Magnetic field sensor */
 		compatible = "ak,ak8963";
 		reg = <0x0c>;
@@ -423,6 +470,30 @@
 		ak,layout = <0x6>;
 		ak,auto-report;
 	};
+#else
+
+//20180820 Frank Cheng add GMC306 for Light Phone
+
+	gmc@c {
+		//compatible = "ak,ak09911";
+		//compatible = "GlobalMEMS,gmc306";
+		compatible = "ak,gmc306";
+		reg = <0x0c>;
+		pinctrl-names = "gmc306_default","gmc306_sleep";
+		pinctrl-0 = <&gmc306_default>;
+		pinctrl-1 = <&gmc306_sleep>;
+		//vdd-supply = <&pm8916_l17>;
+		//vio-supply = <&pm8916_l6>;
+		vdd-supply = <&pm8909_l6>;
+//20181227 Frank Cheng Modified Layout for Light Phone PVT
+//		akm,layout = <0x6>;
+		akm,layout = <0x8>;
+		//gmc,gpio_rstn = <&msm_gpio 36 0x0>;
+		akm,auto-report;
+		akm,use-hrtimer;
+	};
+#endif
+//20180820 Frank Cheng add GMC306 for Light Phone
 };
 
 &mdss_mdp {
@@ -473,18 +544,26 @@
 	pmx_mdss {
 		mdss_dsi_active: mdss_dsi_active {
 			mux {
-				pins = "gpio25", "gpio37";
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+				pins = "gpio50", "gpio37";
+/*[Arima_4101][allen_yu] 20180906 end*/
 			};
 			config {
-				pins = "gpio25", "gpio37";
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+				pins = "gpio50", "gpio37";
+/*[Arima_4101][allen_yu] 20180906 end*/
 			};
 		};
 		mdss_dsi_suspend: mdss_dsi_suspend {
 			mux {
-				pins = "gpio25", "gpio37";
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+				pins = "gpio50", "gpio37";
+/*[Arima_4101][allen_yu] 20180906 end*/
 			};
 			config {
-				pins = "gpio25", "gpio37";
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+				pins = "gpio50", "gpio37";
+/*[Arima_4101][allen_yu] 20180906 end*/
 			};
 		};
 	};
@@ -530,6 +609,8 @@
 			};
 		};
 	};
+//<2018/09/11,Yuchen -[4101] P/L Sensor porting
+#if 0
 	apds99xx_int_pin {
 		apds99xx_default: apds99xx_default {
 			mux {
@@ -554,6 +635,35 @@
 			};
 		};
 	};
+#else
+	stk3x1x_int_pin {
+		stk3x1x_default: stk3x1x_default {
+			mux {
+				pins = "gpio52";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio52";
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+		};
+		stk3x1x_sleep: stk3x1x_sleep {
+			mux {
+				pins = "gpio52";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio52";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+		};
+	};
+#endif
+//>2018/09/11,Yuchen
+
+#if 0
 	ak8963_int_pin {
 		ak8963_default: ak8963_default {
 			mux {
@@ -578,6 +688,37 @@
 			};
 		};
 	};
+#else
+	gmc306_int_pin {
+		gmc306_default: gmc306_default {
+			/*
+			mux {
+				pins = "gpio65";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio65";
+				drive-strength = <6>;
+				bias-pull-up;
+			};
+			*/
+		};
+		gmc306_sleep: gmc306_sleep {
+			/*
+			mux {
+				pins = "gpio65";
+				function = "gpio";
+			};
+			config {
+				pins = "gpio65";
+				drive-strength = <2>;
+				bias-pull-down;
+			};
+			*/
+		};
+	};
+
+#endif
 };
 
 &mdss_dsi0 {
@@ -585,10 +726,12 @@
 	pinctrl-names = "mdss_default", "mdss_sleep";
 	pinctrl-0 = <&mdss_dsi_active &mdss_te_active>;
 	pinctrl-1 = <&mdss_dsi_suspend &mdss_te_suspend>;
-
-	qcom,platform-reset-gpio = <&msm_gpio 25 0>;
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+	qcom,platform-reset-gpio = <&msm_gpio 50 0>;
+/*[Arima_4101][allen_yu] 20180906 end*/
 	qcom,platform-bklight-en-gpio = <&msm_gpio 37 0>;
 };
+
 
 /* CoreSight */
 &tpiu {

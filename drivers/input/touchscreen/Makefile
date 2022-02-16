@@ -91,3 +91,9 @@ obj-$(CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_RMI4_DEV)	+= synaptics_rmi_dev.o
 obj-$(CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_FW_UPDATE) 	+= synaptics_fw_update.o
 obj-$(CONFIG_TOUCHSCREEN_GT9XX)		+= gt9xx/
 obj-$(CONFIG_TOUCHSCREEN_HIMAX_CHIPSET)	+= hxchipset/
+# [Arima_4101][allen_yu] LightPhone ft3417 touch driver porting and dynamic detect ft3267 and ft3417 20181227 begin
+# [Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin
+obj-$(CONFIG_TOUCHSCREEN_FT3267)	+=  ft3267/
+# [Arima_4101][allen_yu] 20180906 end
+obj-$(CONFIG_TOUCHSCREEN_FTS)	+=  ft3417/
+# [Arima_4101][allen_yu] 20181227 end

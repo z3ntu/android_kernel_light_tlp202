@@ -692,6 +692,13 @@ static void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 				(mbhc->zr > mbhc->mbhc_cfg->linein_th &&
 				 mbhc->zr < MAX_IMPED) &&
 				(jack_type == SND_JACK_HEADPHONE)) {
+//[Lightphone][Audio][jinjia]=2019.08.23=Remove detect_extn_cable(Lineout) support for an iphone_headset. -s
+#if 1
+				//should config linein_th=0 in msm8952.c(Machine driver), but we need to show the log for debug.
+				pr_info("%s: Do not marking jack type as SND_JACK_LINEOUT\n",
+				__func__);
+#else
+//[Lightphone][Audio][jinjia]=2019.08.23=Remove detect_extn_cable(Lineout) support for an iphone_headset. -e
 				jack_type = SND_JACK_LINEOUT;
 				mbhc->current_plug = MBHC_PLUG_TYPE_HIGH_HPH;
 				if (mbhc->hph_status) {
@@ -705,6 +712,9 @@ static void wcd_mbhc_report_plug(struct wcd_mbhc *mbhc, int insertion,
 				}
 				pr_debug("%s: Marking jack type as SND_JACK_LINEOUT\n",
 				__func__);
+//[Lightphone][Audio][jinjia]=2019.08.23=Remove detect_extn_cable(Lineout) support for an iphone_headset. -s
+#endif
+//[Lightphone][Audio][jinjia]=2019.08.23=Remove detect_extn_cable(Lineout) support for an iphone_headset. -e
 			}
 		}
 
@@ -870,7 +880,17 @@ static void wcd_mbhc_find_plug_and_report(struct wcd_mbhc *mbhc,
 			wcd_mbhc_hs_elec_irq(mbhc, WCD_MBHC_ELEC_HS_INS,
 					     true);
 		} else {
+//[Lightphone][Audio][jinjia]=2019.08.23=Remove detect_extn_cable(Lineout) support for an iphone_headset. -s
+#if 1
+			//when plug_type = MBHC_PLUG_TYPE_HIGH_HPH , do not report type as LINEOUT.
+			wcd_mbhc_report_plug(mbhc, 1, SND_JACK_HEADSET);
+			pr_info("wcd_mbhc_find_plug_and_report(): Report HEADSET status when connect a Lineout or extension cable.\n");
+#else
+//[Lightphone][Audio][jinjia]=2019.08.23=Remove detect_extn_cable(Lineout) support for an iphone_headset. -e
 			wcd_mbhc_report_plug(mbhc, 1, SND_JACK_LINEOUT);
+//[Lightphone][Audio][jinjia]=2019.08.23=Remove detect_extn_cable(Lineout) support for an iphone_headset. -s
+#endif
+//[Lightphone][Audio][jinjia]=2019.08.23=Remove detect_extn_cable(Lineout) support for an iphone_headset. -e
 		}
 	} else {
 		WARN(1, "Unexpected current plug_type %d, plug_type %d\n",

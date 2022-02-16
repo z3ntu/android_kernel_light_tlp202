@@ -246,10 +246,12 @@ static ssize_t sensors_delay_store(struct device *dev,
 	if (ret)
 		return ret;
 	/* The data unit is millisecond, the min_delay unit is microseconds. */
+	/*20190212 Frank Cheng modified to make Gyro related AOSP sensors data pass through
 	if ((data * 1000) < sensors_cdev->min_delay) {
 		dev_err(dev, "Invalid value of delay, delay=%ld\n", data);
 		return -EINVAL;
 	}
+	*/
 	if (sensors_cdev->sensors_poll_delay == NULL) {
 		dev_err(dev, "Invalid sensor class delay handle\n");
 		return -EINVAL;

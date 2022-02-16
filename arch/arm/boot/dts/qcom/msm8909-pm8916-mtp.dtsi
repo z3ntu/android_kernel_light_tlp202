@@ -11,6 +11,77 @@
  * GNU General Public License for more details.
  */
 
+/*[Arima_4101][allen_yu] LightPhone ft3417 touch driver porting and dynamic detect ft3267 and ft3417 20181227 begin*/
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+&i2c_5 {
+	status = "ok";
+	focaltech@39 {
+		compatible = "focaltech,fts";
+		reg = <0x39>;
+		interrupt-parent = <&msm_gpio>;
+		interrupts = <13 0x02>;
+		vcc_i2c-supply = <&pm8916_l6>;
+		vdd-supply = <&pm8916_l17>;
+		//focaltech,vcc_i2c-voltage = <1800000 1800000>;
+		//focaltech,vdd-voltage = <2600000 3300000>;
+		//focaltech,vcc_i2c-current = <40000>;
+		//focaltech,vdd-current = <20000>;
+		/* pins used by touchscreen */
+		pinctrl-names = "pmx_ts_active", "pmx_ts_suspend",
+			"pmx_ts_release";
+		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+		pinctrl-2 = <&ts_release>;
+		focaltech,display-coords = <0 0 480 600>;
+		focaltech,panel-coords = <0 0 480 600>;
+		focaltech,irq-gpio = <&msm_gpio 13 0x02>;
+		focaltech,reset-gpio = <&msm_gpio 25 0x01>;
+		focaltech,max-touch-number = <5>;
+		focaltech,i2c-pull-up;
+		//focaltech,disable-gpios;
+		//focaltech,button-map = <139 172 158>;
+		};
+};
+
+
+&i2c_5 {
+	status = "ok";
+	focaltech@38 {
+		compatible = "focaltech_3267,ft3267";
+		reg = <0x38>;
+		interrupt-parent = <&msm_gpio>;
+		interrupts = <13 0x02>;
+		vcc_i2c-supply = <&pm8916_l6>;
+		vdd-supply = <&pm8916_l17>;
+		//focaltech,vcc_i2c-voltage = <1800000 1800000>;
+		//focaltech,vdd-voltage = <2600000 3300000>;
+		//focaltech,vcc_i2c-current = <40000>;
+		//focaltech,vdd-current = <20000>;
+		/* pins used by touchscreen */
+		pinctrl-names = "pmx_ts_active", "pmx_ts_suspend",
+			"pmx_ts_release";
+		pinctrl-0 = <&ts_int_active &ts_reset_active>;
+		pinctrl-1 = <&ts_int_suspend &ts_reset_suspend>;
+		pinctrl-2 = <&ts_release>;
+/*[Arima_4101][allen_yu] Modify LCM/TP resolution 20181121 begin*/
+		focaltech,display-coords = <0 0 480 600>;
+		focaltech,panel-coords = <0 0 480 600>;
+/*[Arima_4101][allen_yu] 20181121 end*/
+		focaltech,irq-gpio = <&msm_gpio 13 0x02>;
+		focaltech,reset-gpio = <&msm_gpio 25 0x01>;
+/*[Arima_4101][allen_yu] Upgrade focaltech touch firmware to V12 20181017 begin*/
+/*[Arima_4101][allen_yu] Fix multi touch issue(change protocal from B to A) 20181015 begin*/
+		focaltech,max-touch-number = <1>;
+/*[Arima_4101][allen_yu] 20181015 end*/
+/*[Arima_4101][allen_yu] 20181017 end*/
+		focaltech,i2c-pull-up;
+		//focaltech,disable-gpios;
+		//focaltech,button-map = <139 172 158>;
+		};
+};
+/*[Arima_4101][allen_yu] 20180906 end*/
+/*[Arima_4101][allen_yu] 20181227 end*/
+
 &soc {
 	i2c@78b9000 {
 		synaptics@20 {
@@ -25,7 +96,47 @@
 		};
 	};
 
+	spi@78ba000 {
+		status = "ok";
+		qcom,mdss_spi_client {
+			reg = <0>;
+			compatible = "qcom,mdss-spi-client";
+			lable = "MDSS SPI QUP6 CLIENT";
+			//spi-max-frequency = <50000000>;
+			spi-max-frequency = <19200000>;
+			//spi-cpha;
+		};
+	};
 };
+
+&spi_st7789v2_qvga_cmd {
+		qcom,panel-supply-entries = <&dsi_pm660_panel_pwr_supply>;
+		qcom,mdss-spi-bl-pmic-control-type = "bl_ctrl_pwm";
+		qcom,mdss-spi-bl-pmic-pwm-frequency = <100>;
+		qcom,mdss-spi-bl-pmic-bank-select = <0>;
+		qcom,mdss-spi-pwm-gpio = <&pm8916_mpps 4 0>;
+		/*qcom,cont-splash-enabled;*/
+	};
+
+&mdss_spi {
+		qcom,spi-pref-prim-pan = <&spi_st7789v2_qvga_cmd>;
+		pinctrl-names = "mdss_default", "mdss_sleep";
+		pinctrl-0 = <&mdss_te_active>;
+		pinctrl-1 = <&mdss_te_suspend>;
+//[4101][Raymond]Display driver porting - begin
+		//qcom,platform-te-gpio = <&msm_gpio 49 0>;
+		qcom,platform-reset-gpio = <&msm_gpio 50 0>;
+		qcom,platform-vcc-en-gpio = <&msm_gpio 65 0>;
+//[4101][Raymond] decrease power consumption in suspend - begin		
+		qcom,platform-ls-en-gpio = <&msm_gpio 99 0>;
+		qcom,platform-boost-en-gpio = <&msm_gpio 76 0>;
+//[4101][Raymond] decrease power consumption in suspend - end		
+		//qcom,platform-spi-dc-gpio = <&msm_gpio 59 0>; 
+		qcom,platform-busy-gpio = <&msm_gpio 49 0>;
+//[4101][Raymond]Display driver porting - end
+		//vdd-supply = <&pm8916_l7>;
+		vddio-supply = <&pm8916_l5>;
+	};
 
 &audio_codec_mtp {
 	qcom,model = "msm8909-pm8916-snd-card";
@@ -98,6 +209,7 @@
 	qcom,mdss-dsi-pwm-gpio = <&pm8916_mpps 2 0>;
 	qcom,panel-supply-entries = <&dsi_panel_pwr_supply>;
 };
+
 
 &pm8916_chg {
 	status = "ok";

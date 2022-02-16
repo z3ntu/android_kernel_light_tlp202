@@ -44,7 +44,9 @@
 		sdhc2 = &sdhc_2; /* SDC2 SD card slot */
 		spi0 = &spi_0; /* SPI0 controller device */
 		spi2 = &spi_2;
-		spi4 = &spi_4;
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+//		spi4 = &spi_4;
+/*[Arima_4101][allen_yu] 20180906 end*/
 		i2c5 = &i2c_5; /* I2c5 cntroller device */
 		i2c3 = &i2c_3; /* I2C3 controller */
 		i2c1 = &i2c_1; /* I2C1 controller */
@@ -144,13 +146,23 @@
 		};
 
 		modem_adsp_mem: modem_adsp_region@0 {
+/* [20181130][Tracychui]Modify modem memory size start */	
+#if 1
+			reg = <0x0 0x88000000 0x0 0x04900000>;
+#else
 			reg = <0x0 0x88000000 0x0 0x05200000>;
+#endif
 			compatible = "removed-dma-pool";
 			no-map;
 		};
 
 		peripheral_mem: pheripheral_region@0 {
+#if 1
+			reg = <0x0 0x8c900000 0x0 0x0700000>;
+#else
 			reg = <0x0 0x8d200000 0x0 0x0700000>;
+#endif
+/* [20181130][Tracychui]Modify modem memory size end */
 			compatible = "removed-dma-pool";
 			no-map;
 		};
@@ -1067,13 +1079,17 @@
 		cell-index = <0>;
 	};
 
-	qcom,rmtfs_sharedmem@87c00000 {
+    /* [20190814][TracyChui]Modify efs memory size start */
+	/* qcom,rmtfs_sharedmem@87c00000 { */
+	  qcom,rmtfs_sharedmem@87be0000 {
 		compatible = "qcom,sharedmem-uio";
-		reg = <0x87c00000 0xe0000>;
+		//reg = <0x87c00000 0xe0000>;
+		reg = <0x87be0000 0x100000>;
 		reg-names = "rmtfs";
 		qcom,client-id = <0x00000001>;
 	};
-
+    /* [20190814][TracyChui]Modify efs memory size end */
+	 
 	qcom,dsp_sharedmem@87ce0000 {
 		compatible = "qcom,sharedmem-uio";
 		reg = <0x87ce0000 0x10000>;
@@ -1349,33 +1365,33 @@
 		qcom,master-id = <86>;
 		status = "disabled";
 	};
-
-	spi_4: spi@78B8000{ /* BLSP1 QUP4 */
-		compatible = "qcom,spi-qup-v2";
-		#address-cells = <1>;
-		#size-cells = <0>;
-		reg-names = "spi_physical", "spi_bam_physical";
-		reg = <0x78b8000 0x600>,
-		      <0x7884000 0x23000>;
-		interrupt-names = "spi_irq", "spi_bam_irq";
-		interrupts = <0 98 0>, <0 238 0>;
-		spi-max-frequency = <50000000>;
-		pinctrl-names = "spi_default", "spi_sleep";
-		pinctrl-0 = <&spi4_default &spi4_cs0_active>;
-		pinctrl-1 = <&spi4_sleep &spi4_cs0_sleep>;
-		clocks = <&clock_gcc clk_gcc_blsp1_ahb_clk>,
-		<&clock_gcc clk_gcc_blsp1_qup4_spi_apps_clk>;
-		clock-names = "iface_clk", "core_clk";
-		qcom,infinite-mode = <0>;
-		qcom,use-bam;
-		qcom,use-pinctrl;
-		qcom,ver-reg-exists;
-		qcom,bam-consumer-pipe-index = <10>;
-		qcom,bam-producer-pipe-index = <11>;
-		qcom,master-id = <86>;
-		status = "disabled";
-	};
-
+/*[Arima_4101][allen_yu] LightPhone ft3267 touch driver porting 20180906 begin*/
+//	spi_4: spi@78B8000{ /* BLSP1 QUP4 */
+//		compatible = "qcom,spi-qup-v2";
+//		#address-cells = <1>;
+//		#size-cells = <0>;
+//		reg-names = "spi_physical", "spi_bam_physical";
+//		reg = <0x78b8000 0x600>,
+//		      <0x7884000 0x23000>;
+//		interrupt-names = "spi_irq", "spi_bam_irq";
+//		interrupts = <0 98 0>, <0 238 0>;
+//		spi-max-frequency = <50000000>;
+//		pinctrl-names = "spi_default", "spi_sleep";
+//		pinctrl-0 = <&spi4_default &spi4_cs0_active>;
+//		pinctrl-1 = <&spi4_sleep &spi4_cs0_sleep>;
+//		clocks = <&clock_gcc clk_gcc_blsp1_ahb_clk>,
+//		<&clock_gcc clk_gcc_blsp1_qup4_spi_apps_clk>;
+//		clock-names = "iface_clk", "core_clk";
+//		qcom,infinite-mode = <0>;
+//		qcom,use-bam;
+//		qcom,use-pinctrl;
+//		qcom,ver-reg-exists;
+//		qcom,bam-consumer-pipe-index = <10>;
+//		qcom,bam-producer-pipe-index = <11>;
+//		qcom,master-id = <86>;
+//		status = "disabled";
+//	};
+/*[Arima_4101][allen_yu] 20180906 end*/
 	dma_blsp1: qcom,sps-dma@7884000 { /* BLSP1 */
 		#dma-cells = <4>;
 		compatible = "qcom,sps-dma";
@@ -1877,9 +1893,11 @@
 		qcom,use-sw-aes-cbc-ecb-ctr-algo;
 		qcom,use-sw-aes-xts-algo;
 		qcom,use-sw-ahash-algo;
+		/* [20181130][Tracychui]Modify modem memory size start */
 		qcom,use-sw-aes-ccm-algo;
 		qcom,use-sw-hmac-algo;
 		qcom,use-sw-aead-algo;
+		/* [20181130][Tracychui]Modify modem memory size end */
 
 		status = "disabled";
 		qcom,ce-opp-freq = <100000000>;
@@ -1913,7 +1931,10 @@
 
 	qcom_seecom: qseecom@87900000 {
 		compatible = "qcom,qseecom";
-		reg = <0x87900000 0x300000>;
+		/* [20190814][TracyChui]Modify efs memory size start */
+		//reg = <0x87900000 0x300000>;
+		reg = <0x87900000 0x2e0000>;
+		/* [20190814][TracyChui]Modify efs memory size end */
 		reg-names = "secapp-region";
 		qcom,disk-encrypt-pipe-pair = <2>;
 		qcom,hlos-ce-hw-instance = <0>;

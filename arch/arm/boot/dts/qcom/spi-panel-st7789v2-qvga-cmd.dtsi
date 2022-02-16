@@ -1,0 +1,94 @@
+/* Copyright (c) 2017-2018, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+&mdss_mdp {
+	spi_st7789v2_qvga_cmd: qcom,mdss_spi_st7789v2_qvga_cmd {
+		qcom,mdss-spi-panel-name =
+			"st7789v2 qvga command mode spi panel";
+		qcom,mdss-spi-panel-destination = "display_1";
+		qcom,mdss-spi-panel-controller = <&mdss_spi>;
+		qcom,mdss-spi-panel-framerate = <60>;
+		qcom,mdss-spi-panel-width = <480>;
+		qcom,mdss-spi-panel-height = <600>;
+		qcom,mdss-spi-h-front-porch = <79>;
+		qcom,mdss-spi-h-back-porch = <59>;
+		qcom,mdss-spi-h-pulse-width = <60>;
+		qcom,mdss-spi-v-back-porch = <10>;
+		qcom,mdss-spi-v-front-porch = <7>;
+		qcom,mdss-spi-v-pulse-width = <2>;
+		qcom,mdss-spi-h-left-border = <0>;
+		qcom,mdss-spi-h-right-border = <0>;
+		qcom,mdss-spi-v-top-border = <0>;
+		qcom,mdss-spi-v-bottom-border = <0>;
+		//[4101][Raymond] fix CTS issue - begin
+		qcom,mdss-pan-physical-width-dimension = <44>;
+		qcom,mdss-pan-physical-height-dimension = <55>;
+		//[4101][Raymond] fix CTS issue - end
+		//[20181005][TracyChui]Fixed phone crash start
+		qcom,mdss-spi-bpp = <32>;  //16
+		//[20181005][TracyChui]Fixed phone crash end
+		qcom,mdss-spi-on-command = [
+				00 05 01 03 04 00 00
+				00 03 00 25 00
+				00 02 26 82
+				00 02 03 03
+				00 04 07 EF EF 28 
+				00 02 E0 02
+				00 02 30 0E
+				00 02 41 00
+				00 03 50 01 22
+				00 04 60 3F 09 2D
+				00 05 61 02 60 01 E0
+				00 02 E0 02 				
+				00 02 82 30
+				00 09 83 00 00 00 00 02 58 01 E0
+				00 FF 13 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00 00 00 00 00 00
+				         00 00 00 00 00
+				00 01 04
+				//00 01 02
+				];
+		qcom,mdss-spi-off-command = [];
+		qcom,mdss-spi-bl-min-level = <1>;
+		qcom,mdss-spi-bl-max-level = <255>;
+		qcom,mdss-spi-bl-pmic-control-type = "bl_ctrl_pwm"; /*bl_gpio_pulse*/
+		qcom,mdss-spi-reset-sequence = <1 20>, <1 1>, <1 20>; //raymond moify
+		qcom,mdss-spi-panel-status-check-mode = "reg_read";
+		qcom,mdss-spi-panel-status-reg = /bits/ 8 <0x0A>;
+		qcom,mdss-spi-panel-status-read-length = <1>;
+		qcom,mdss-spi-panel-max-error-count = <1>;
+		qcom,mdss-spi-panel-status-value = /bits/ 8 <0x9C>;
+	};
+};

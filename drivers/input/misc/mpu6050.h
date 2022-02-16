@@ -16,6 +16,10 @@
 #ifndef __MPU6050_H__
 #define __MPU6050_H__
 
+#ifndef _ICM_2060x_
+#define _ICM_2060x_
+#endif
+
 #define REG_SAMPLE_RATE_DIV	0x19
 #define REG_CONFIG		0x1A
 
@@ -24,6 +28,9 @@
 #define GYRO_CONFIG_FSR_SHIFT	3
 
 #define REG_ACCEL_CONFIG	0x1C
+#ifdef _ICM_2060x_
+#define REG_ACCEL_CONFIG2	0x1D
+#endif
 #define REG_ACCEL_MOT_THR	0x1F
 #define REG_ACCEL_MOT_DUR	0x20
 #define ACCL_CONFIG_FSR_SHIFT	3
@@ -161,7 +168,11 @@ enum mpu_filter {
 	MPU_DLPF_20HZ,
 	MPU_DLPF_10HZ,
 	MPU_DLPF_5HZ,
+//#ifdef _ICM_2060x_
+//	MPU_DLPF_420HZ,
+//#else
 	MPU_DLPF_RESERVED,
+//#endif	
 	NUM_FILTER
 };
 
@@ -230,6 +241,9 @@ struct mpu_reg_map {
 	u8 fifo_en;
 	u8 gyro_config;
 	u8 accel_config;
+#ifdef _ICM_2060x_
+	u8 accel_config2;
+#endif
 	u8 fifo_count_h;
 	u8 mot_thr;
 	u8 mot_dur;
@@ -269,6 +283,9 @@ struct mpu_reg_map {
 struct mpu_chip_config {
 	u32 fsr:2;
 	u32 lpf:3;
+#ifdef _ICM_2060x_
+	u32 lpf_accel:3;
+#endif
 	u32 accel_fs:2;
 	u32 enable:1;
 	u32 accel_enable:1;

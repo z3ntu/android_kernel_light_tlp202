@@ -1523,6 +1523,36 @@ static struct ctl_table vm_table[] = {
 		.mode           = 0444 /* read-only */,
 		.proc_handler   = pdflush_proc_obsolete,
 	},
+/* <2018/10/04,Yuchen-[4101] Google Kenel pathes */
+#ifdef CONFIG_MEMCG
+	{
+		.procname	= "vmpressure_level_med",
+		.data		= &vmpressure_level_med,
+		.maxlen		= sizeof(vmpressure_level_med),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= &zero,
+		.extra2		= &vmpressure_level_critical,
+	},
+	{
+		.procname	= "vmpressure_level_critical",
+		.data		= &vmpressure_level_critical,
+		.maxlen		= sizeof(vmpressure_level_critical),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= &vmpressure_level_med,
+		.extra2		= &one_hundred,
+	},
+	{
+		.procname	= "vmpressure_win",
+		.data		= &vmpressure_win,
+		.maxlen		= sizeof(vmpressure_win),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec_minmax,
+		.extra1		= &zero,
+	},
+#endif
+/* >2018/10/04,Yuchen */
 	{
 		.procname	= "swappiness",
 		.data		= &vm_swappiness,
